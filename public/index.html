@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RepoRetro 💀 Ghost in the Repo | Hacktoberfest 2026</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💀</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <!-- Candlelight Ambience Glow Background -->
+  <div class="candle-glow top-left"></div>
+  <div class="candle-glow bottom-right"></div>
+  <div class="marigold-petals-bg"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-branding">
+        <div class="logo-box">
+          <span class="logo-icon">💀</span>
+          <span class="marigold-flower">🌼</span>
+        </div>
+        <div>
+          <div class="header-tags">
+            <span class="badge badge-hf">#hf26challenge Week 4</span>
+            <span class="badge badge-gemma">Google Gemma</span>
+            <span class="badge badge-entire">Entire.io Checkpoints</span>
+            <span class="badge badge-mastra">Mastra Agent</span>
+          </div>
+          <h1 class="app-title">REPORETRO</h1>
+          <p class="app-tagline">Ghost in the Repo • Día de los Muertos Archaeological Agent</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btnLoadSample" class="btn btn-secondary">
+          <span>🕯️ Load Haunted Showcase Repo</span>
+        </button>
+        <a href="https://github.com/AndyKhang404/reporetro" target="_blank" rel="noopener" class="btn btn-outline">
+          <span>GitHub</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Scan Bar -->
+    <section class="scan-section card">
+      <form id="scanForm" class="scan-form">
+        <div class="input-wrapper">
+          <span class="input-icon">🔍</span>
+          <input type="text" id="repoInput" placeholder="Enter local repository path or public GitHub URL..." value="./fixtures/haunted-repo" required>
+        </div>
+        <button type="submit" id="btnScan" class="btn btn-primary">
+          <span class="btn-text">Awaken the Ghosts</span>
+          <span class="spinner hidden"></span>
+        </button>
+      </form>
+      <div class="scan-hint">
+        <span>💡 Tip: Click <strong>"Load Haunted Showcase Repo"</strong> to instantly test multi-era git commits, departed contributors, and Entire AI agent checkpoints.</span>
+      </div>
+    </section>
+
+    <!-- Overview Metrics Bar -->
+    <section id="metricsBar" class="metrics-grid hidden">
+      <div class="metric-card">
+        <div class="metric-icon">🪦</div>
+        <div class="metric-info">
+          <span class="metric-label">Dead Code Relics</span>
+          <span class="metric-value" id="valDeadCode">0</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">🕯️</div>
+        <div class="metric-info">
+          <span class="metric-label">Departed Ancestors</span>
+          <span class="metric-value" id="valDeparted">0</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-info">
+          <span class="metric-label">Average Haunt Score</span>
+          <span class="metric-value highlight-score" id="valHauntScore">0 / 100</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">📦</div>
+        <div class="metric-info">
+          <span class="metric-label">Commits Scanned</span>
+          <span class="metric-value" id="valCommits">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="tab-graveyard">
+        <span>🪦 The Graveyard & Chesterton's Fences</span>
+        <span class="tab-count" id="countGraveyard">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-ofrenda">
+        <span>🌼 Día de los Muertos Ofrenda</span>
+        <span class="tab-count" id="countOfrenda">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-sessions">
+        <span>📜 Archaeological Sessions & Entire Checkpoints</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-open-innovation">
+        <span>🛡️ Why Open Innovation Matters</span>
+      </button>
+    </nav>
+
+    <!-- Tab Contents -->
+    <main class="tab-content-area">
+      <!-- 1. The Graveyard Tab -->
+      <section id="tab-graveyard" class="tab-panel active">
+        <div class="panel-header">
+          <div>
+            <h2>The Code Graveyard</h2>
+            <p>Relics, unreferenced exports, and commented-out ghosts classified via Chesterton's Fence principles.</p>
+          </div>
+          <div class="verdict-legend">
+            <span class="legend-item"><span class="dot relic"></span> 🕯️ Load-Bearing Relic</span>
+            <span class="legend-item"><span class="dot exorcise"></span> 🪦 Safe to Lay to Rest</span>
+            <span class="legend-item"><span class="dot unfinished"></span> 🌼 Unfinished Ghost Work</span>
+          </div>
+        </div>
+
+        <div id="graveyardList" class="graveyard-grid">
+          <div class="empty-state card">
+            <p>🕯️ Enter a repository or click "Load Haunted Showcase Repo" to awaken the archaeological findings.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Día de los Muertos Ofrenda Tab -->
+      <section id="tab-ofrenda" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Día de los Muertos Ofrenda</h2>
+            <p>Honoring long-gone contributors whose active commits ended months or years ago, yet whose code endures in HEAD.</p>
+          </div>
+        </div>
+
+        <div id="ofrendaList" class="ofrenda-grid">
+          <div class="empty-state card">
+            <p>🌼 No departed contributors indexed yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Archaeological Sessions Tab -->
+      <section id="tab-sessions" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Archaeological Log & Entire Checkpoints</h2>
+            <p>Linking historical commits to the AI agent prompts, reasoning traces, and decisions stored in Entire / JSONL transcripts.</p>
+          </div>
+        </div>
+
+        <div id="sessionsTimeline" class="timeline-container">
+          <div class="empty-state card">
+            <p>📜 Load a repository to view linked Entire checkpoints and git history.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Why Open Innovation Matters Tab -->
+      <section id="tab-open-innovation" class="tab-panel">
+        <div class="card open-innovation-card">
+          <h2>Why Open Innovation Matters for RepoRetro</h2>
+          <p class="lede">Hacktoberfest 2026 prompt requirement: <em>"Tell us where your open-based approach worked better than a closed one."</em></p>
+          
+          <div class="features-grid">
+            <div class="feature-box">
+              <div class="feature-icon">🔒</div>
+              <h3>100% Air-Gapped Code Privacy</h3>
+              <p>Repo archaeology requires ingesting proprietary source code, internal commit logs, and private developer discussions. By running open-weight <strong>Google Gemma</strong> locally over <code>llama.cpp</code> or Ollama, zero lines of confidential codebase or agent session history ever leave the developer's laptop or internal network.</p>
+            </div>
+
+            <div class="feature-box">
+              <div class="feature-icon">🏛️</div>
+              <h3>Immortal Institutional Memory (Git-Native Entire)</h3>
+              <p>When proprietary AI coding services shut down or change APIs, cloud-hosted chat histories vanish. By leveraging <strong>Entire's git-native checkpoints</strong> (stored on <code>entire/checkpoints/v1</code>) and open Markdown/JSONL logs, the "why" behind code changes is safely versioned directly inside the Git repository itself forever.</p>
+            </div>
+
+            <div class="feature-box">
+              <div class="feature-icon">🕯️</div>
+              <h3>Chesterton's Fence vs. Naive Deletion</h3>
+              <p>Standard linters blindly flag unreferenced exports as dead code. Open-weight Gemma acts as a nuanced archaeological scholar: it inspects the commit era and agent thinking to distinguish between load-bearing emergency shims and truly abandoned code relics.</p>
+            </div>
+
+            <div class="feature-box">
+              <div class="feature-icon">🌼</div>
+              <h3>Community Continuity & Remembrance</h3>
+              <p>Open source thrives on the shoulders of departed contributors. RepoRetro transforms clinical "git blame" into a Día de los Muertos celebration of human craftsmanship, acknowledging those who laid the foundation before us.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Built with ❤️ for <strong>Hacktoberfest 2026: Ghost in the Machine</strong> • Powered by <strong>Google Gemma</strong>, <strong>Render</strong>, <strong>Entire.io</strong>, and <strong>Mastra</strong>.</p>
+      <p class="copyright">© 2026 AndyKhang404 • Open source under the MIT License.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

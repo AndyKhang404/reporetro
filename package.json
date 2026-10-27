@@ -1,0 +1,44 @@
+{
+  "name": "reporetro",
+  "version": "1.0.0",
+  "description": "Ghost in the Repo: An archaeological AI agent that finds dead code and long-gone contributors, then explains why each piece exists using commit history and Entire agent sessions.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "reporetro": "./bin/reporetro.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/server/index.ts",
+    "cli": "tsx src/cli.ts",
+    "seed-fixture": "tsx scripts/generate-fixture.ts",
+    "test": "tsx test/basic.test.ts"
+  },
+  "keywords": [
+    "hacktoberfest",
+    "hf26challenge",
+    "ghost-in-the-machine",
+    "gemma",
+    "mastra",
+    "entire",
+    "git-archaeology",
+    "dead-code",
+    "dia-de-los-muertos"
+  ],
+  "author": "AndyKhang404",
+  "license": "MIT",
+  "dependencies": {
+    "@mastra/core": "^1.79.0",
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^18.0.9",
+    "express": "^4.21.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

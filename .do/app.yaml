@@ -1,0 +1,24 @@
+name: reporetro
+region: nyc
+services:
+  - name: web
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: AndyKhang404/reporetro
+    build_command: npm install && npm run build
+    run_command: npm start
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: GEMMA_BASE_URL
+        value: http://localhost:8080/v1
+      - key: GEMMA_MODEL
+        value: gemma-2-2b-it
+      - key: SQLITE_DB_PATH
+        value: ./data/reporetro.db

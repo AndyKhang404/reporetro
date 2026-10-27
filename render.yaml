@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: reporetro
+    env: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: GEMMA_BASE_URL
+        value: http://localhost:8080/v1
+      - key: GEMMA_MODEL
+        value: gemma-2-2b-it
+      - key: SQLITE_DB_PATH
+        value: /var/data/reporetro.db
+    disk:
+      name: reporetro-data
+      mountPath: /var/data
+      sizeGB: 1

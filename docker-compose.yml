@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  reporetro:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - GEMMA_BASE_URL=http://llama-server:8080/v1
+      - GEMMA_MODEL=gemma-2-2b-it
+      - SQLITE_DB_PATH=/app/data/reporetro.db
+    volumes:
+      - reporetro_data:/app/data
+    depends_on:
+      - llama-server
+
+  llama-server:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    ports:
+      - "8080:8080"
+    environment:
+      - LLAMA_ARG_MODEL=/models/gemma-2-2b-it-Q4_K_M.gguf
+      - LLAMA_ARG_PORT=8080
+      - LLAMA_ARG_CTX_SIZE=4096
+    volumes:
+      - ./models:/models:ro
+
+volumes:
+  reporetro_data:
