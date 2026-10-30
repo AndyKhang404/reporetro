@@ -27,6 +27,7 @@ export function createServer() {
       status: 'ok',
       timestamp: new Date().toISOString(),
       gemma: {
+        provider: 'llama-server',
         online: gemmaOk,
         endpoint: process.env.GEMMA_BASE_URL || 'http://localhost:8080/v1',
         model: process.env.GEMMA_MODEL || 'gemma-2-2b-it'
@@ -103,10 +104,24 @@ export function createServer() {
         isCloned = true;
 
         console.log(`Cloning shallow repository from ${trimmed} into ${tempDir}...`);
-        execSync(`git clone --depth 50 "${trimmed}" "${tempDir}"`, {
-          stdio: 'pipe',
-          timeout: 30000 // 30s timeout
-        });
+        try {
+          execSync(`git clone --depth 50 "${trimmed}" "${tempDir}"`, {
+            stdio: 'pipe',
+            timeout: 60000, // 60s timeout
+            env: {
+              ...process.env,
+              GIT_TERMINAL_PROMPT: '0',
+              GIT_ASKPASS: 'true'
+            }
+          });
+        } catch (cloneErr: any) {
+          const stderr = cloneErr.stderr ? cloneErr.stderr.toString().trim() : '';
+          const details = stderr || cloneErr.message;
+          if (details.includes('Repository not found') || details.includes('Authentication failed')) {
+            throw new Error(`Repository not found or private (authentication failed): ${trimmed}`);
+          }
+          throw new Error(`Git clone failed: ${details}`);
+        }
         targetPath = tempDir;
       } else {
         targetPath = path.resolve(trimmed);
@@ -120,7 +135,7 @@ export function createServer() {
 
       res.json(report);
     } catch (err: any) {
-      console.error('Scan error:', err);
+      console.error('Scan error:', err.message || err);
       res.status(500).json({ error: `Failed to scan repository: ${err.message}` });
     } finally {
       if (isCloned && tempDir && fs.existsSync(tempDir)) {

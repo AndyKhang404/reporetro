@@ -11,6 +11,10 @@
     "build": "tsc",
     "start": "tsx src/server/index.ts",
     "cli": "tsx src/cli.ts",
+    "llama-server": "docker compose up llama-server",
+    "ai:start": "docker compose up -d llama-server",
+    "ai:stop": "docker compose stop llama-server",
+    "ai:logs": "docker compose logs -f llama-server",
     "seed-fixture": "tsx scripts/generate-fixture.ts",
     "test": "tsx test/basic.test.ts"
   },

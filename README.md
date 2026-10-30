@@ -85,7 +85,7 @@ flowchart TD
 
 Hacktoberfest 2026 prompt requirement: *“Tell us where your open-based approach worked better than a closed one.”*
 
-1. **100% Air-Gapped Codebase Privacy:** Software archaeology requires scanning full git commit histories, unreleased code, and internal developer notes. By running open-weight **Google Gemma** locally via `llama.cpp` or Ollama, zero bytes of proprietary code ever touch third-party cloud servers.
+1. **100% Air-Gapped Codebase Privacy:** Software archaeology requires scanning full git commit histories, unreleased code, and internal developer notes. By running open-weight **Google Gemma** locally via `llama-server` (`llama.cpp`), zero bytes of proprietary code ever touch third-party cloud servers.
 2. **Immortal Institutional Memory:** When proprietary AI chat services shut down or change terms, cloud chat logs disappear. By using **Entire's git-native checkpoints** (stored on `entire/checkpoints/v1`) and open Markdown/JSONL logs, the reasoning behind your codebase is versioned inside Git itself forever.
 3. **Nuanced Archaeology vs. Blind Linters:** Blind linters delete code that lacks call sites in `HEAD`. Open-weight Gemma acts as a thoughtful scholar: inspecting commit eras and agent prompts to protect sacred load-bearing workarounds.
 4. **Honoring Human Craftsmanship:** RepoRetro transforms the cold finger-pointing of `git blame` into a community celebration of the people who built the foundation before us.
@@ -97,6 +97,7 @@ Hacktoberfest 2026 prompt requirement: *“Tell us where your open-based approac
 ### Prerequisites
 - Node.js v20+ or v24+
 - Git
+- Docker (for running the local llama-server)
 
 ### 1. Installation
 ```bash
@@ -105,17 +106,31 @@ cd reporetro
 npm install
 ```
 
-### 2. Run the CLI Scanner
-Scan any local git repository (defaults to the bundled Haunted Showcase Repo):
+### 2. Start the AI Server (llama-server)
+Start the local `llama-server` powered by Google Gemma 2 2B (automatically downloads and caches the GGUF model):
+```bash
+# Start llama-server interactively:
+npm run llama-server
+
+# Or start in the background:
+npm run ai:start
+
+# To stop:
+npm run ai:stop
+```
+
+### 3. Run the CLI Scanner
+Scan any local git repository or remote GitHub repo (defaults to the bundled Haunted Showcase Repo):
 ```bash
 # Scan the bundled Haunted Showcase Repo
 npm run cli scan
 
-# Or scan any local project
+# Or scan any local project or remote public repo
 npm run cli scan /path/to/your/git/repo
+npm run cli scan https://github.com/owner/repo
 ```
 
-### 3. Launch the Web Dashboard
+### 4. Launch the Web Dashboard
 ```bash
 npm start
 # Visit http://localhost:3000

@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   reporetro:
     build: .
+    container_name: reporetro-app
     ports:
       - "3000:3000"
     environment:
@@ -13,18 +12,31 @@ services:
     volumes:
       - reporetro_data:/app/data
     depends_on:
-      - llama-server
+      llama-server:
+        condition: service_healthy
 
   llama-server:
-    image: ghcr.io/ggerganov/llama.cpp:server
+    image: ghcr.io/ggml-org/llama.cpp:server
+    container_name: reporetro-llama-server
     ports:
       - "8080:8080"
     environment:
-      - LLAMA_ARG_MODEL=/models/gemma-2-2b-it-Q4_K_M.gguf
+      - LLAMA_ARG_HOST=0.0.0.0
       - LLAMA_ARG_PORT=8080
       - LLAMA_ARG_CTX_SIZE=4096
+      - LLAMA_ARG_ALIAS=gemma-2-2b-it
+      - LLAMA_ARG_HF_REPO=bartowski/gemma-2-2b-it-GGUF
+      - LLAMA_ARG_HF_FILE=gemma-2-2b-it-Q4_K_M.gguf
     volumes:
-      - ./models:/models:ro
+      - ./models:/models
+      - llama_cache:/root/.cache
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 25
+      start_period: 20s
 
 volumes:
   reporetro_data:
+  llama_cache:

@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { execSync } from 'child_process';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -20,9 +21,41 @@ async function main() {
 
   if (command === 'scan') {
     let targetPath = args[1] || './fixtures/haunted-repo';
-    
-    // If scanning default fixture and it doesn't exist yet, generate it
-    if (targetPath === './fixtures/haunted-repo' && !fs.existsSync(path.resolve(targetPath, '.git'))) {
+    let isCloned = false;
+    let tempDir = '';
+
+    const trimmed = targetPath.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('git@')) {
+      tempDir = path.resolve('./data/clones', `cli-clone-${Date.now()}`);
+      fs.mkdirSync(tempDir, { recursive: true });
+      isCloned = true;
+
+      console.log(`\n📦 Cloning shallow repository from ${trimmed}...`);
+      try {
+        execSync(`git clone --depth 50 "${trimmed}" "${tempDir}"`, {
+          stdio: 'pipe',
+          timeout: 60000,
+          env: {
+            ...process.env,
+            GIT_TERMINAL_PROMPT: '0',
+            GIT_ASKPASS: 'true'
+          }
+        });
+        targetPath = tempDir;
+      } catch (cloneErr: any) {
+        if (isCloned && tempDir && fs.existsSync(tempDir)) {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+        const stderr = cloneErr.stderr ? cloneErr.stderr.toString().trim() : '';
+        const details = stderr || cloneErr.message;
+        if (details.includes('Repository not found') || details.includes('Authentication failed')) {
+          console.error(`\n❌ Error: Repository not found or private (authentication failed): ${trimmed}`);
+        } else {
+          console.error(`\n❌ Git clone failed: ${details}`);
+        }
+        process.exit(1);
+      }
+    } else if (targetPath === './fixtures/haunted-repo' && !fs.existsSync(path.resolve(targetPath, '.git'))) {
       console.log('🕯️ Generating realistic Haunted Showcase Repository fixture...');
       generateHauntedFixture();
     }
@@ -37,11 +70,12 @@ async function main() {
     const orchestrator = new RepoRetroOrchestrator();
     const db = new ReportDatabase();
 
-    const startTime = Date.now();
-    const report = await orchestrator.analyzeRepo(resolved);
-    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    try {
+      const startTime = Date.now();
+      const report = await orchestrator.analyzeRepo(resolved);
+      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
-    db.saveReport(report);
+      db.saveReport(report);
 
     console.log(`\n✅ Scan completed in ${duration}s (Report ID: ${report.id})`);
     console.log(`📦 Modules Scanned: ${report.totalFiles} | Total Commits: ${report.totalCommitsScanned}`);
@@ -94,6 +128,13 @@ async function main() {
     console.log(`🌐 Start the Web Dashboard with: npx tsx src/cli.ts serve`);
     console.log(`================================================================\n`);
     return;
+    } finally {
+      if (isCloned && tempDir && fs.existsSync(tempDir)) {
+        try {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        } catch {}
+      }
+    }
   }
 
   console.log(`Usage:`);

@@ -15,7 +15,20 @@ export class GemmaClient {
   public async checkHealth(): Promise<boolean> {
     try {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 2000);
+      const id = setTimeout(() => controller.abort(), 3000);
+
+      // 1. Check llama-server native /health endpoint
+      const rootUrl = this.baseUrl.replace(/\/v1\/?$/, '');
+      try {
+        const healthRes = await fetch(`${rootUrl}/health`, { signal: controller.signal });
+        if (healthRes.ok) {
+          clearTimeout(id);
+          this.isAvailable = true;
+          return true;
+        }
+      } catch {}
+
+      // 2. Fallback to OpenAI-compatible /v1/models endpoint
       const res = await fetch(`${this.baseUrl}/models`, {
         headers: { Authorization: `Bearer ${this.apiKey}` },
         signal: controller.signal
@@ -108,7 +121,7 @@ In the spirit of Día de los Muertos ofrendas, honor their legacy. Mention what 
 
   private async queryGemma(prompt: string): Promise<string> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000); // 12s timeout
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout for local CPU inference
 
     const res = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
@@ -134,9 +147,16 @@ In the spirit of Día de los Muertos ofrendas, honor their legacy. Mention what 
 
   private parseJsonFromMarkdown(text: string): any {
     try {
-      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, text];
-      const toParse = (jsonMatch[1] || text).trim();
-      return JSON.parse(toParse);
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[1].trim());
+      }
+      const firstBrace = text.indexOf('{');
+      const lastBrace = text.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        return JSON.parse(text.slice(firstBrace, lastBrace + 1));
+      }
+      return JSON.parse(text.trim());
     } catch {
       return null;
     }
