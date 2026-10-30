@@ -1,6 +1,6 @@
 ---
 title: "RepoRetro: Ghost in the Repo — Unearthing Dead Code & Honoring Departed Contributors with Gemma & Entire"
-published: false
+published: true
 tags: ["hf26challenge", "devchallenge", "ai", "opensource"]
 canonical_url: "https://github.com/AndyKhang404/reporetro"
 cover_image: "https://raw.githubusercontent.com/AndyKhang404/reporetro/main/public/banner.png"
@@ -21,15 +21,17 @@ When modern developers encounter these artifacts, we face a dilemma. Traditional
 
 For **Hacktoberfest 2026 Week 4 ("Ghost in the Machine")**, I built **RepoRetro**: an open-source repository archaeologist that doesn't just treat dead code like garbage to be purged. In the Mexican tradition of **Día de los Muertos**, RepoRetro builds a digital **Ofrenda** for your repository. It unearths abandoned code, calculates a multi-factor **Haunt Score (0–100)**, queries past AI agent sessions via **Entire**, and uses **Google's open-weight Gemma** to reconstruct the historical rationale before delivering a **Chesterton's Fence verdict**: is this a *Load-Bearing Relic*, *Unfinished Work*, or *Safe to Exorcise*?
 
+![RepoRetro: Ghost in the Repo Banner](https://raw.githubusercontent.com/AndyKhang404/reporetro/main/public/banner.png)
+
 ---
 
 ## What I Built
 
 **RepoRetro** is a dual-interface repository intelligence tool:
-1. **Interactive Candlelit Web Dashboard**: A rich Día de los Muertos themed interface with cempasúchil marigold glowing accents, live scan progress, graveyard statistics, and a dedicated **Ofrenda Tab** dedicated to departed contributors.
+1. **Interactive Candlelit Web Dashboard**: A rich Día de los Muertos themed interface with cempasúchil marigold glowing accents, live scan progress, graveyard statistics, and a dedicated **Ofrenda Tab** honoring departed contributors.
 2. **Terminal CLI**: A fast command-line scanner (`npx reporetro scan .` or `npx tsx src/cli.ts scan`) that prints formatted archaeological reports directly to your stdout.
 
-```
+```plaintext
 🕯️ REPORETRO: GHOST IN THE REPO ARCHAEOLOGY REPORT
 ═══════════════════════════════════════════════════════════════════════
 Repository: haunted-repo
@@ -68,18 +70,61 @@ Average Haunt Score: 94 / 100 👻
 
 ---
 
-## Demo & Architecture
+## Demo & Visual Tour
 
-### The Día de los Muertos Web Dashboard
+### 1. The Code Graveyard & Chesterton's Fences
+
+![The Code Graveyard Dashboard](https://raw.githubusercontent.com/AndyKhang404/reporetro/main/public/dashboard.png)
 
 RepoRetro serves an altar-inspired UI with real-time analytics:
+- **Haunt Score Meter (0–100)**: Combines unreferenced export counts, git decay time, author departure delta, and commented line density into a unified index.
+- **The Graveyard View**: Lists every dead code relic with expandable commit history, author attribution, and correlated agent prompt history.
+- **Chesterton's Fence Badges**:
+  - 🕯️ **Load-Bearing Relic**: Keep and document (e.g., legacy banking fallback).
+  - 🪦 **Safe to Lay to Rest**: Confirmed dead code ready for clean removal.
+  - 🌼 **Unfinished Ghost Work**: Incomplete feature branch ready to resurrect.
 
-- **Haunt Score Meter**: Combines unreferenced export counts, git decay time, author departure delta, and commented line density into a unified 0–100 index.
-- **The Graveyard Tab**: Lists every dead code relic with expandable commit history, author attribution, and correlated agent prompt history.
-- **The Ofrenda Tab**: A tribute altar displaying deceased/departed contributors who haven't committed in over 6 months, computing their surviving vs. dead lines of code and generating poetic tributes.
-- **Agent Sessions Tab**: Inspects git commit trailers (`Entire-Checkpoint: ...`) and the git-native `entire/checkpoints/v1` tree to reveal the agent sessions that generated the code.
+---
 
-```
+### 2. Private Repository Scanning & Zero-Persistence Security
+
+Real enterprise repositories and legacy codebases almost never live in public git URLs. To make RepoRetro viable for real teams, it supports user-added credentials across both the Web UI and CLI:
+
+![Private Repository Credentials Panel](https://raw.githubusercontent.com/AndyKhang404/reporetro/main/public/screenshot-credentials.png)
+
+- **Personal Access Tokens (PAT)**: Works with GitHub (classic and fine-grained PATs), GitLab (`read_repository`), and Bitbucket App Passwords.
+- **SSH Private Keys**: Paste OpenSSH / PEM keys directly or load key files from your filesystem.
+- **Intelligent URL Adaptation**: Automatically converts HTTPS URLs to SSH when an SSH key is given, and SSH (`git@...`) URLs to HTTPS when a token is provided.
+- **Zero-Storage Ephemeral Security**: Credentials are kept strictly in-memory during cloning. They are never written to disk or the SQLite database. Git origins are automatically sanitized, and any credential strings in errors or logs are replaced with `***`.
+- **Environment Variable Fallbacks**: Server deployments automatically detect `GITHUB_TOKEN`, `GIT_TOKEN`, `GIT_USERNAME`, `GIT_PASSWORD`, or `GIT_SSH_KEY` from `.env`.
+
+---
+
+### 3. The Día de los Muertos Ofrenda Tab
+
+![Día de los Muertos Ofrenda Honoring Departed Contributors](https://raw.githubusercontent.com/AndyKhang404/reporetro/main/public/screenshot-ofrenda.png)
+
+The **Ofrenda Tab** honors long-gone contributors who haven't committed in over 6 months:
+- Computes their first and last commit eras, total commits given, and surviving lines of code still in `HEAD`.
+- Generates poetic tributes celebrating their foundational craft.
+- Transmutes the cold finger-pointing of `git blame` into a community celebration of human craftsmanship.
+
+---
+
+### 4. Archaeological Sessions & Entire Checkpoints
+
+![Archaeological Sessions & Entire Checkpoints Timeline](https://raw.githubusercontent.com/AndyKhang404/reporetro/main/public/screenshot-sessions.png)
+
+When AI coding agents write code, their thinking is usually lost once merged. RepoRetro inspects git commit trailers (`Entire-Checkpoint: ...`) and the git-native `entire/checkpoints/v1` tree to recover:
+- The original human prompt that initiated the code.
+- The agent's chain-of-thought reasoning snippet.
+- Why the feature was paused or abandoned mid-architecture.
+
+---
+
+## System Architecture
+
+```plaintext
                     ┌────────────────────────────────────────────────────────┐
                     │                   RepoRetro Web UI                     │
                     │         (Día de los Muertos Altar / Express API)       │
@@ -196,10 +241,16 @@ npm install
 npm run build
 
 # Generate the included multi-era haunted repository fixture
-npm run generate:fixture
+npm run seed-fixture
 
-# Scan any repository
-npx tsx src/cli.ts scan fixtures/haunted-repo
+# Scan any local repository
+npm run cli scan fixtures/haunted-repo
+
+# Scan a private repo using a Personal Access Token (PAT)
+npm run cli scan https://github.com/owner/private-repo --token ghp_yourTokenHere
+
+# Scan a private repo using an SSH key file
+npm run cli scan git@github.com:owner/private-repo.git --ssh-key ~/.ssh/id_ed25519
 ```
 
 ### Launch the Altar Dashboard
