@@ -166,6 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.ok) {
         const report = await res.json();
         renderReport(report);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('openCreds') === '1') {
+          const credDetails = document.getElementById('credentialsDetails');
+          if (credDetails) credDetails.open = true;
+        }
+        const tabParam = urlParams.get('tab');
+        if (tabParam) {
+          const tabBtn = document.querySelector(`[data-tab="${tabParam}"]`);
+          if (tabBtn) tabBtn.click();
+        }
       }
     } catch (err) {
       console.warn('Could not load sample automatically:', err);
