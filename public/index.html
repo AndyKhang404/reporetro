@@ -51,13 +51,81 @@
       <form id="scanForm" class="scan-form">
         <div class="input-wrapper">
           <span class="input-icon">🔍</span>
-          <input type="text" id="repoInput" placeholder="Enter local repository path or public GitHub URL..." value="./fixtures/haunted-repo" required>
+          <input type="text" id="repoInput" placeholder="Enter local repository path, public or private Git URL..." value="./fixtures/haunted-repo" required>
         </div>
         <button type="submit" id="btnScan" class="btn btn-primary">
           <span class="btn-text">Awaken the Ghosts</span>
           <span class="spinner hidden"></span>
         </button>
       </form>
+
+      <!-- Private Repository Credentials Accordion -->
+      <details class="credentials-details" id="credentialsDetails">
+        <summary class="credentials-summary">
+          <span class="summary-left">
+            <span class="lock-icon">🔒</span>
+            <span class="summary-title">Private Repository Credentials</span>
+            <span class="credentials-status-tag" id="credStatusTag">Optional</span>
+          </span>
+          <span class="summary-chevron">▼</span>
+        </summary>
+
+        <div class="credentials-panel">
+          <div class="credentials-type-tabs">
+            <label class="tab-radio">
+              <input type="radio" name="authType" value="token" checked>
+              <span>🔑 Personal Access Token (PAT)</span>
+            </label>
+            <label class="tab-radio">
+              <input type="radio" name="authType" value="ssh">
+              <span>🗝️ SSH Private Key</span>
+            </label>
+          </div>
+
+          <!-- Token Auth Form -->
+          <div id="tokenAuthSection" class="credentials-group">
+            <div class="form-grid-2">
+              <div class="field-box">
+                <label for="credToken">Personal Access Token (GitHub PAT / GitLab / Bitbucket)</label>
+                <div class="input-with-action">
+                  <input type="password" id="credToken" placeholder="ghp_xxxxxxxxxxxx or glpat-xxxxxxxxxxxx" autocomplete="off">
+                  <button type="button" id="btnToggleTokenVisibility" class="btn-icon" title="Toggle visibility">👁️</button>
+                </div>
+              </div>
+              <div class="field-box">
+                <label for="credUsername">Username <span class="sub-label">(optional, auto-detected for GitHub/GitLab)</span></label>
+                <input type="text" id="credUsername" placeholder="e.g. x-access-token, oauth2, or username" autocomplete="off">
+              </div>
+            </div>
+            <p class="field-hint">💡 For GitHub: generate a classic or fine-grained token with <code>repo</code> read permission. For GitLab: use a token with <code>read_repository</code> scope.</p>
+          </div>
+
+          <!-- SSH Key Auth Form -->
+          <div id="sshAuthSection" class="credentials-group hidden">
+            <div class="field-box">
+              <div class="field-header">
+                <label for="credSshKey">SSH Private Key (OpenSSH / PEM format)</label>
+                <label class="btn-upload-key">
+                  <span>📁 Load Key File</span>
+                  <input type="file" id="sshKeyFileInput" accept=".pem,.key,.id_rsa,.id_ed25519,text/plain" style="display:none">
+                </label>
+              </div>
+              <textarea id="credSshKey" rows="4" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----" spellcheck="false" autocomplete="off"></textarea>
+            </div>
+            <p class="field-hint">💡 Used with SSH URLs like <code>git@github.com:owner/repo.git</code>. Kept only in memory for this scan.</p>
+          </div>
+
+          <div class="credentials-footer">
+            <div class="security-badge">
+              <span>🛡️ Ephemeral & Zero-Storage: Credentials are used in-memory only and never persisted. Environment variables (<code>GIT_TOKEN</code>, <code>GITHUB_TOKEN</code>) are also automatically detected.</span>
+            </div>
+            <button type="button" id="btnClearCreds" class="btn btn-sm btn-outline">
+              <span>Clear Credentials</span>
+            </button>
+          </div>
+        </div>
+      </details>
+
       <div class="scan-hint">
         <span>💡 Tip: Click <strong>"Load Haunted Showcase Repo"</strong> to instantly test multi-era git commits, departed contributors, and Entire AI agent checkpoints.</span>
       </div>

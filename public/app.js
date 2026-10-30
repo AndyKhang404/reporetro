@@ -40,17 +40,109 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSampleRepo();
   });
 
+  // Credentials Elements
+  const authTypeRadios = document.querySelectorAll('input[name="authType"]');
+  const tokenAuthSection = document.getElementById('tokenAuthSection');
+  const sshAuthSection = document.getElementById('sshAuthSection');
+  const credToken = document.getElementById('credToken');
+  const credUsername = document.getElementById('credUsername');
+  const credSshKey = document.getElementById('credSshKey');
+  const sshKeyFileInput = document.getElementById('sshKeyFileInput');
+  const btnToggleTokenVisibility = document.getElementById('btnToggleTokenVisibility');
+  const btnClearCreds = document.getElementById('btnClearCreds');
+  const credStatusTag = document.getElementById('credStatusTag');
+
+  // Auth Type Selector
+  authTypeRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (radio.value === 'ssh') {
+        tokenAuthSection.classList.add('hidden');
+        sshAuthSection.classList.remove('hidden');
+      } else {
+        tokenAuthSection.classList.remove('hidden');
+        sshAuthSection.classList.add('hidden');
+      }
+      updateCredStatus();
+    });
+  });
+
+  // Toggle Token Visibility
+  if (btnToggleTokenVisibility && credToken) {
+    btnToggleTokenVisibility.addEventListener('click', () => {
+      const isPass = credToken.getAttribute('type') === 'password';
+      credToken.setAttribute('type', isPass ? 'text' : 'password');
+      btnToggleTokenVisibility.textContent = isPass ? '🔒' : '👁️';
+    });
+  }
+
+  // Load SSH Key from File
+  if (sshKeyFileInput && credSshKey) {
+    sshKeyFileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        credSshKey.value = event.target.result;
+        updateCredStatus();
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // Update Status Badge when user types
+  [credToken, credUsername, credSshKey].forEach(el => {
+    if (el) el.addEventListener('input', updateCredStatus);
+  });
+
+  function updateCredStatus() {
+    const selectedType = document.querySelector('input[name="authType"]:checked')?.value || 'token';
+    const hasCreds = selectedType === 'token'
+      ? Boolean(credToken.value.trim() || credUsername.value.trim())
+      : Boolean(credSshKey.value.trim());
+
+    if (hasCreds) {
+      credStatusTag.textContent = selectedType === 'token' ? 'Token Configured 🔑' : 'SSH Key Loaded 🗝️';
+      credStatusTag.classList.add('configured');
+    } else {
+      credStatusTag.textContent = 'Optional';
+      credStatusTag.classList.remove('configured');
+    }
+  }
+
+  // Clear Credentials
+  if (btnClearCreds) {
+    btnClearCreds.addEventListener('click', () => {
+      if (credToken) credToken.value = '';
+      if (credUsername) credUsername.value = '';
+      if (credSshKey) credSshKey.value = '';
+      if (sshKeyFileInput) sshKeyFileInput.value = '';
+      updateCredStatus();
+    });
+  }
+
   scanForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const repoPath = repoInput.value.trim();
     if (!repoPath) return;
+
+    const selectedType = document.querySelector('input[name="authType"]:checked')?.value || 'token';
+    const credentials = {};
+    if (selectedType === 'token') {
+      if (credToken?.value.trim()) credentials.token = credToken.value.trim();
+      if (credUsername?.value.trim()) credentials.username = credUsername.value.trim();
+    } else {
+      if (credSshKey?.value.trim()) credentials.sshKey = credSshKey.value.trim();
+    }
 
     setLoading(true);
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repoUrlOrPath: repoPath })
+        body: JSON.stringify({
+          repoUrlOrPath: repoPath,
+          credentials: Object.keys(credentials).length > 0 ? credentials : undefined
+        })
       });
 
       if (!res.ok) {

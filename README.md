@@ -120,15 +120,26 @@ npm run ai:stop
 ```
 
 ### 3. Run the CLI Scanner
-Scan any local git repository or remote GitHub repo (defaults to the bundled Haunted Showcase Repo):
+Scan any local git repository, public repo, or **private repository with user-added credentials** (defaults to the bundled Haunted Showcase Repo):
 ```bash
 # Scan the bundled Haunted Showcase Repo
 npm run cli scan
 
-# Or scan any local project or remote public repo
+# Scan any local project or public git repo
 npm run cli scan /path/to/your/git/repo
 npm run cli scan https://github.com/owner/repo
+
+# Scan private repo with Personal Access Token (PAT)
+npm run cli scan https://github.com/owner/private-repo --token ghp_yourTokenHere
+
+# Scan private repo with username + token / password
+npm run cli scan https://gitlab.com/owner/private-repo --username yourUser --password yourPass
+
+# Scan private repo via SSH Private Key
+npm run cli scan git@github.com:owner/private-repo.git --ssh-key ~/.ssh/id_ed25519
 ```
+
+> **Tip:** You can also define `GITHUB_TOKEN`, `GIT_TOKEN`, `GIT_USERNAME`, `GIT_PASSWORD`, or `GIT_SSH_KEY` in your `.env` file as default credentials.
 
 ### 4. Launch the Web Dashboard
 ```bash
@@ -137,7 +148,8 @@ npm start
 ```
 On the dashboard:
 - Click **"🕯️ Load Haunted Showcase Repo"** for an instant archaeological demonstration.
-- Or paste any local directory path or public GitHub URL to awaken its ghosts!
+- Or paste any local directory path, public GitHub URL, or private Git URL.
+- Expand **"🔒 Private Repository Credentials"** to add a Personal Access Token (PAT) or upload/paste an SSH private key. Credentials remain in memory during scan and are never stored on disk.
 
 ---
 

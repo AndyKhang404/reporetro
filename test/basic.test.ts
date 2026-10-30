@@ -54,7 +54,9 @@ async function runTests() {
   console.log('\n🎉 All tests passed successfully!');
 }
 
-runTests().catch(err => {
+runTests().then(() => {
+  process.exit(0);
+}).catch(err => {
   console.error('❌ Test failed:', err);
   process.exit(1);
 });

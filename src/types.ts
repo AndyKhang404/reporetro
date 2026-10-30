@@ -7,6 +7,20 @@ export type DeadCodeType =
   | 'ancient_marker'
   | 'departed_ownership';
 
+export interface GitCredentials {
+  token?: string;
+  username?: string;
+  password?: string;
+  sshKey?: string;     // Raw SSH private key text (PEM / OpenSSH format)
+  sshKeyPath?: string; // Path to SSH private key file
+}
+
+export interface CloneOptions {
+  credentials?: GitCredentials;
+  depth?: number;
+  timeoutMs?: number;
+}
+
 export interface AgentSessionMatch {
   sessionId: string;
   source: 'entire_checkpoint' | 'jsonl_transcript' | 'commit_trailer';

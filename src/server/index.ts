@@ -1,11 +1,12 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { execSync } from 'child_process';
 import { RepoRetroOrchestrator } from '../mastra/agent.js';
 import { ReportDatabase } from '../cache/db.js';
 import { GemmaClient } from '../ai/gemma.js';
 import { generateHauntedFixture } from '../fixture/generate.js';
+import { cloneRepository } from '../git/cloner.js';
+import { GitCredentials } from '../types.js';
 
 export function createServer() {
   const app = express();
@@ -83,65 +84,42 @@ export function createServer() {
     }
   });
 
-  // Scan a repo
+  // Scan a repo with optional private credentials
   app.post('/api/scan', async (req, res) => {
-    const { repoUrlOrPath } = req.body;
+    const {
+      repoUrlOrPath,
+      credentials,
+      token,
+      username,
+      password,
+      sshKey,
+      sshKeyPath
+    } = req.body;
 
     if (!repoUrlOrPath || typeof repoUrlOrPath !== 'string') {
       return res.status(400).json({ error: 'repoUrlOrPath is required' });
     }
 
-    const trimmed = repoUrlOrPath.trim();
-    let targetPath = trimmed;
-    let isCloned = false;
-    let tempDir = '';
+    const resolvedCredentials: GitCredentials = {
+      token: credentials?.token ?? token,
+      username: credentials?.username ?? username,
+      password: credentials?.password ?? password,
+      sshKey: credentials?.sshKey ?? sshKey,
+      sshKeyPath: credentials?.sshKeyPath ?? sshKeyPath
+    };
 
+    let clonedRepo: { targetPath: string; isTemporary: boolean; cleanup: () => void } | null = null;
     try {
-      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('git@')) {
-        // Clone GitHub or git repo into temporary dir
-        tempDir = path.resolve('./data/clones', `clone-${Date.now()}`);
-        fs.mkdirSync(tempDir, { recursive: true });
-        isCloned = true;
-
-        console.log(`Cloning shallow repository from ${trimmed} into ${tempDir}...`);
-        try {
-          execSync(`git clone --depth 50 "${trimmed}" "${tempDir}"`, {
-            stdio: 'pipe',
-            timeout: 60000, // 60s timeout
-            env: {
-              ...process.env,
-              GIT_TERMINAL_PROMPT: '0',
-              GIT_ASKPASS: 'true'
-            }
-          });
-        } catch (cloneErr: any) {
-          const stderr = cloneErr.stderr ? cloneErr.stderr.toString().trim() : '';
-          const details = stderr || cloneErr.message;
-          if (details.includes('Repository not found') || details.includes('Authentication failed')) {
-            throw new Error(`Repository not found or private (authentication failed): ${trimmed}`);
-          }
-          throw new Error(`Git clone failed: ${details}`);
-        }
-        targetPath = tempDir;
-      } else {
-        targetPath = path.resolve(trimmed);
-        if (!fs.existsSync(path.join(targetPath, '.git'))) {
-          return res.status(400).json({ error: `Not a valid git repository at path: ${trimmed}` });
-        }
-      }
-
-      const report = await orchestrator.analyzeRepo(targetPath);
+      clonedRepo = await cloneRepository(repoUrlOrPath, { credentials: resolvedCredentials });
+      const report = await orchestrator.analyzeRepo(clonedRepo.targetPath);
       db.saveReport(report);
-
       res.json(report);
     } catch (err: any) {
       console.error('Scan error:', err.message || err);
-      res.status(500).json({ error: `Failed to scan repository: ${err.message}` });
+      res.status(500).json({ error: err.message || 'Failed to scan repository' });
     } finally {
-      if (isCloned && tempDir && fs.existsSync(tempDir)) {
-        try {
-          fs.rmSync(tempDir, { recursive: true, force: true });
-        } catch {}
+      if (clonedRepo) {
+        clonedRepo.cleanup();
       }
     }
   });
